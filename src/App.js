@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import { useReducer } from "react";
 import DigitButton from "./DigitButton";
 import OperationButton from "./OperationButton";
 import "./style.css";
@@ -12,17 +12,18 @@ export const ACTIONS = {
 };
 
 function reducer(state, { type, payload }) {
-  // eslint-disable-next-line default-case
   switch (type) {
     case ACTIONS.ADD_DIGIT:
       if (state.overwrite) {
         return {
           ...state,
-          currentOpearnd: payload.digit,
-          overwrite: false
+          currentOperand: `${state.currentOperand || ""}${payload.digit}`
         };
       }
-      if (payload.digit === "0" && state.currentOpearnd === "0") {
+      if (payload.digit === "0" && state.currentOperand === "0") {
+        return state;
+      }
+      if (payload.digit === "." && state.currentOperand == null) {
         return state;
       }
       if (payload.digit === "." && state.currentOperand.includes(".")) {
@@ -34,11 +35,11 @@ function reducer(state, { type, payload }) {
         currentOperand: `${state.currentOperand || ""}${payload.digit}`
       };
     case ACTIONS.CHOOSE_OPERATION:
-      if (state.currentOpearnd == null && state.previousOperand == null) {
+      if (state.currentOperand == null && state.previousOperand == null) {
         return state;
       }
 
-      if (state.currentOpearnd == null) {
+      if (state.currentOperand == null) {
         return {
           ...state,
           operation: payload.operation
@@ -49,17 +50,17 @@ function reducer(state, { type, payload }) {
         return {
           ...state,
           operation: payload.operation,
-          previousOperand: state.currentOpearnd,
-          currentOpearnd: null
+          previousOperand: state.currentOperand,
+          currentOperand: null
         };
       }
+
       return {
         ...state,
         previousOperand: evaluate(state),
         operation: payload.operation,
-        currentOpearnd: null
+        currentOperand: null
       };
-    //MIJENJANO clear
     case ACTIONS.CLEAR:
       return {
         ...state,
@@ -67,52 +68,47 @@ function reducer(state, { type, payload }) {
         previousOperand: null,
         operation: null
       };
-
     case ACTIONS.DELETE_DIGIT:
       if (state.overwrite) {
         return {
           ...state,
           overwrite: false,
-          currentOpearnd: null
+          currentOperand: null
         };
       }
-      if (state.currentOpearnd == null) return state;
-      if (state.currentOpearnd.length === 1) {
-        return {
-          ...state,
-          currentOpearnd: null
-        };
+      if (state.currentOperand == null) return state;
+      if (state.currentOperand.length === 1) {
+        return { ...state, currentOperand: null };
       }
+
       return {
         ...state,
-        currentOpearnd: state.currentOpearnd.slice(0, -1)
+        currentOperand: state.currentOperand.slice(0, -1)
       };
-
     case ACTIONS.EVALUATE:
       if (
         state.operation == null ||
-        state.currentOpearnd == null ||
+        state.currentOperand == null ||
         state.previousOperand == null
       ) {
         return state;
       }
+
       return {
         ...state,
         overwrite: true,
         previousOperand: null,
         operation: null,
-        currentOpearnd: evaluate(state)
+        currentOperand: evaluate(state)
       };
   }
 }
 
-function evaluate({ currentOpearnd, previousOperand, operation }) {
+function evaluate({ currentOperand, previousOperand, operation }) {
   const prev = parseFloat(previousOperand);
-  const current = parseFloat(currentOpearnd);
+  const current = parseFloat(currentOperand);
   if (isNaN(prev) || isNaN(current)) return "";
   let computation = "";
-
-  // eslint-disable-next-line default-case
   switch (operation) {
     case "+":
       computation = prev + current;
@@ -120,20 +116,20 @@ function evaluate({ currentOpearnd, previousOperand, operation }) {
     case "-":
       computation = prev - current;
       break;
-    case "÷":
-      computation = prev / current;
-      break;
     case "*":
       computation = prev * current;
       break;
+    case "÷":
+      computation = prev / current;
+      break;
   }
+
   return computation.toString();
 }
 
 const INTEGER_FORMATTER = new Intl.NumberFormat("en-us", {
-  maximumFractionDigits: onabort
+  maximumFractionDigits: 0
 });
-
 function formatOperand(operand) {
   if (operand == null) return;
   const [integer, decimal] = operand.split(".");
@@ -146,6 +142,7 @@ function App() {
     reducer,
     {}
   );
+
   return (
     <div className="calculator-grid">
       <div className="output">
