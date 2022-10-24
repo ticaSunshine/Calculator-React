@@ -18,7 +18,9 @@ function reducer(state, { type, payload }) {
       if (state.overwrite) {
         return {
           ...state,
-          currentOperand: `${state.currentOperand || ""}${payload.digit}`
+          currentOperand: payload.digit,
+          overwrite: false
+          //currentOperand:`${state.currentOperand || ""}${payload.digit}`
         };
       }
       if (payload.digit === "0" && state.currentOperand === "0") {

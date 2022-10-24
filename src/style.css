@@ -4,7 +4,7 @@
   
   body {
     margin: 0;
-    background: linear-gradient(to right, #00AAFF, #00FF6C);
+    background: antiquewhite
   }
   
   .calculator-grid {
@@ -18,9 +18,9 @@
   .calculator-grid > button {
     cursor: pointer;
     font-size: 2rem;
-    border: 1px solid white;
+    border: 1px solid rgb(255, 255, 255);
     outline: none;
-    background-color: rgba(255, 255, 255, .75);
+    background-color: rgba(255, 255, 255, 0.5);
   }
   
   .calculator-grid > button:hover,
